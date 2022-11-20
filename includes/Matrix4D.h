@@ -60,16 +60,6 @@ namespace Vrixic
 
 			inline static Matrix4D Transpose(const Matrix4D& mat);
 
-			inline void SetIdentity();
-
-			inline void SetTranslation(const Vector3D& translation);
-
-			// Translate Matrix 
-			inline void TranslateMatrix(const Vector3D& translation);
-
-			// Scales the matrix
-			inline void ScaleMatrix(const Vector3D& scale);
-
 			/* Euler Angles Rotation Calculation */
 
 			// Rotation over X - axis, returns matrix 
@@ -83,6 +73,24 @@ namespace Vrixic
 			// Rotation over Z - axis, return matrix
 			inline static Matrix4D MakeRotZ(float angle);
 
+			/* Makes a LookAt Matrix that is not inversed, returns world space matrix  */
+			inline static Matrix4D LookAt(const Vector3D& eye, const Vector3D& target, const Vector3D& up);
+
+			inline static Matrix4D OrthoNormalizeMatrix(const Matrix4D& mat);
+
+			inline static Matrix4D TurnTo(float deltaTime, float speed, const Vector3D& target, const Matrix4D& mat);
+			
+			inline void SetIdentity();
+
+			inline void SetTranslation(const Vector3D& translation);
+
+			// Translate Matrix 
+			inline void TranslateMatrix(const Vector3D& translation);
+
+			// Scales the matrix
+			inline void ScaleMatrix(const Vector3D& scale);
+
+
 			/* DO NOT call this, need to be reworked....*/ // Makes a rotation from vector3
 			//inline static Matrix4D MakeRotation(const Vector3D& rotation);
 
@@ -94,12 +102,6 @@ namespace Vrixic
 			/* An actual Matrix4D transformation inverse */
 			inline Matrix4D Inverse() const;
 
-			/* Makes a LookAt Matrix that is not inversed, returns world space matrix  */
-			inline static Matrix4D LookAt(const Vector3D& eye, const Vector3D& target, const Vector3D& up);
-
-			inline static Matrix4D OrthoNormalizeMatrix(const Matrix4D& mat);
-
-			inline static Matrix4D TurnTo(float deltaTime, float speed, const Vector3D& target, const Matrix4D& mat);
 
 			inline Vector3D GetEulerAngles() const;
 
@@ -230,50 +232,6 @@ namespace Vrixic
 			);
 		}
 
-		inline void Matrix4D::SetIdentity()
-		{
-			M[0][0] = 1.0f;
-			M[0][1] = 0.0f;
-			M[0][2] = 0.0f;
-			M[0][3] = 0.0f;
-
-			M[1][0] = 0.0f;
-			M[1][1] = 1.0f;
-			M[1][2] = 0.0f;
-			M[1][3] = 0.0f;
-
-			M[2][0] = 0.0f;
-			M[2][1] = 0.0f;
-			M[2][2] = 1.0f;
-			M[2][3] = 0.0f;
-
-			M[3][0] = 0.0f;
-			M[3][1] = 0.0f;
-			M[3][2] = 0.0f;
-			M[3][3] = 1.0f;
-		}
-
-		inline void Matrix4D::SetTranslation(const Vector3D& translation)
-		{
-			M[3][0] = translation.X;
-			M[3][1] = translation.Y;
-			M[3][2] = translation.Z;
-		}
-
-		inline void Matrix4D::TranslateMatrix(const Vector3D& translation)
-		{
-			M[3][0] += translation.X;
-			M[3][1] += translation.Y;
-			M[3][2] += translation.Z;
-		}
-
-		inline void Matrix4D::ScaleMatrix(const Vector3D& scale)
-		{
-			M[0][0] += scale.X;
-			M[1][1] += scale.Y;
-			M[2][2] += scale.Z;
-		}
-
 		inline Matrix4D Matrix4D::MakeRotX(float degrees)
 		{
 			float Rads = MathUtils::DegreesToRadians(degrees);
@@ -332,6 +290,99 @@ namespace Vrixic
 		//
 		//	return Result;
 		//}
+
+		inline Matrix4D Matrix4D::LookAt(const Vector3D& eye, const Vector3D& target, const Vector3D& up)
+		{
+			Vector3D ZAxis = (target - eye).Normalize();					// normal(target - eye)
+			Vector3D XAxis = Vector3D::CrossProduct(up, ZAxis).Normalize(); // normal(cross(up, ZAxis))
+			Vector3D YAxis = Vector3D::CrossProduct(ZAxis, XAxis);			// cross(ZAxis, XAxis)
+
+			// [ XAxis.X			XAxis.Y				XAxis.Z			0]
+			// [ YAxis.X			YAxis.Y				YAxis.Z			0]
+			// [ ZAxis.X			ZAxis.Y				ZAxis.Z			0]
+			// [ eye.X				eye.Y				eye.Z			1]
+
+			Matrix4D Result(
+				XAxis.X, XAxis.Y, XAxis.Z, 0.0f,
+				YAxis.X, YAxis.Y, YAxis.Z, 0.0f,
+				ZAxis.X, ZAxis.Y, ZAxis.Z, 0.0f,
+				eye.X, eye.Y, eye.Z, 1.0f
+			);
+
+			return Result;
+		}
+
+		inline Matrix4D Matrix4D::OrthoNormalizeMatrix(const Matrix4D& mat)
+		{
+			Vector3D Z = mat[2].ToVector3D().Normalize();
+			Vector3D X = Vector3D::CrossProduct(Vector3D(0, 1, 0), Z).Normalize(); /* Use World Up to get X vector */
+			Vector3D Y = Vector3D::CrossProduct(Z, X).Normalize();
+
+			return Matrix4D(Vector4D(X, 0.0f), Vector4D(Y, 0.0f), Vector4D(Z, 0.0f), mat[3]);
+		}
+
+		inline Matrix4D Matrix4D::TurnTo(float deltaTime, float speed, const Vector3D& target, const Matrix4D& mat)
+		{
+			/* Vector to the target */
+			Vector3D ToTarget = (target - mat[3].ToVector3D()).Normalize();
+
+			/* DotY -> the dot of ToTarget to the right vector */
+			float DotY = Vector3D::DotProduct(ToTarget, mat[0].ToVector3D());
+
+			/* DotX -> the dot of ToTarget to the up vector */
+			float DotX = Vector3D::DotProduct(ToTarget, mat[1].ToVector3D());
+
+			Matrix4D RotX = Matrix4D::MakeRotX(MathUtils::RadiansToDegrees(-DotX) * deltaTime * speed);
+			Matrix4D RotY = Matrix4D::MakeRotY(MathUtils::RadiansToDegrees(DotY) * deltaTime * speed);
+			Matrix4D Result = RotY * RotX * mat;
+
+			return OrthoNormalizeMatrix(Result);
+
+		}
+
+		inline void Matrix4D::SetIdentity()
+		{
+			M[0][0] = 1.0f;
+			M[0][1] = 0.0f;
+			M[0][2] = 0.0f;
+			M[0][3] = 0.0f;
+
+			M[1][0] = 0.0f;
+			M[1][1] = 1.0f;
+			M[1][2] = 0.0f;
+			M[1][3] = 0.0f;
+
+			M[2][0] = 0.0f;
+			M[2][1] = 0.0f;
+			M[2][2] = 1.0f;
+			M[2][3] = 0.0f;
+
+			M[3][0] = 0.0f;
+			M[3][1] = 0.0f;
+			M[3][2] = 0.0f;
+			M[3][3] = 1.0f;
+		}
+
+		inline void Matrix4D::SetTranslation(const Vector3D& translation)
+		{
+			M[3][0] = translation.X;
+			M[3][1] = translation.Y;
+			M[3][2] = translation.Z;
+		}
+
+		inline void Matrix4D::TranslateMatrix(const Vector3D& translation)
+		{
+			M[3][0] += translation.X;
+			M[3][1] += translation.Y;
+			M[3][2] += translation.Z;
+		}
+
+		inline void Matrix4D::ScaleMatrix(const Vector3D& scale)
+		{
+			M[0][0] += scale.X;
+			M[1][1] += scale.Y;
+			M[2][2] += scale.Z;
+		}
 
 		inline float Matrix4D::Determinant() const
 		{

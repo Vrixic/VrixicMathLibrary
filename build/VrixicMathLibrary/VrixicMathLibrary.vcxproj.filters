@@ -65,5 +65,8 @@
     <ClInclude Include="..\..\includes\ProjectionMatrix4D.h">
       <Filter>Header Files\Math</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\includes\Quat.h">
+      <Filter>Header Files\Math</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

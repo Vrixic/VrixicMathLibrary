@@ -63,7 +63,7 @@ namespace Vrixic
 
 			inline float LengthSquared() const;
 
-			inline void Normalize();
+			inline const Vector4D& Normalize();
 
 			inline Vector3D ToVector3D() const;
 		};
@@ -189,7 +189,8 @@ namespace Vrixic
 
 		inline Vector4D Vector4D::Lerp(const Vector4D& start, const Vector4D& end, float ratio)
 		{
-			return Vector4D(MathUtils::Lerp(start.X, end.X, ratio), MathUtils::Lerp(start.Y, end.Y, ratio), MathUtils::Lerp(start.Z, end.Z, ratio), MathUtils::Lerp(start.W, end.W, ratio));
+			//return Vector4D(MathUtils::Lerp(start.X, end.X, ratio), MathUtils::Lerp(start.Y, end.Y, ratio), MathUtils::Lerp(start.Z, end.Z, ratio), MathUtils::Lerp(start.W, end.W, ratio));
+			return start + (end - start) * ratio;
 		}
 
 		inline float Vector4D::Length() const
@@ -202,7 +203,7 @@ namespace Vrixic
 			return (X * X + Y * Y + Z * Z + W * W);
 		}
 
-		inline void Vector4D::Normalize()
+		inline const Vector4D& Vector4D::Normalize()
 		{
 			const float Magnitude = (1.0f / (Length() + EPSILON));
 			X *= Magnitude;
@@ -210,7 +211,9 @@ namespace Vrixic
 			Z *= Magnitude;
 			W *= Magnitude;
 
+			return *this;
 		}
+
 		inline Vector3D Vector4D::ToVector3D() const
 		{
 			return Vector3D(X, Y, Z);

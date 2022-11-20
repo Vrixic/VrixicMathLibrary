@@ -199,7 +199,8 @@ namespace Vrixic
 
 		inline Vector3D Vector3D::Lerp(const Vector3D& start, const Vector3D& end, float ratio)
 		{
-			return Vector3D(MathUtils::Lerp(start.X, end.X, ratio), MathUtils::Lerp(start.Y, end.Y, ratio), MathUtils::Lerp(start.Z, end.Z, ratio));
+			//return Vector3D(MathUtils::Lerp(start.X, end.X, ratio), MathUtils::Lerp(start.Y, end.Y, ratio), MathUtils::Lerp(start.Z, end.Z, ratio));
+			return start + (end - start) * ratio;
 		}
 
 		inline float Vector3D::Length() const

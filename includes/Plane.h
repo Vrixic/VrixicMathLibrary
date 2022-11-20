@@ -22,10 +22,7 @@ namespace Vrixic
 			inline Plane(float x, float y, float z, float distance);
 
 			inline Plane(Vector3D& normal, float distance);
-
-			inline Vector3D GetNormal() const;
-
-			inline Vector3D AbsNormal();
+		public:
 
 			/*
 			* The dot product between a point and a plane is equal to the signed
@@ -39,11 +36,16 @@ namespace Vrixic
 			*/
 			inline static float Dot(const Plane& p, const Vector3D& v);
 
-			inline void Normalize();
-
 			inline static PlaneIntersectionResult IntersectSphereOnPlane(const Vector3D& center, const float radius, const Plane& plane);
 
 			inline static PlaneIntersectionResult IntersectAABBOnPlane(const Vector3D& aabbMin, const Vector3D& aabbMax, Plane& plane);
+			
+			inline void Normalize();
+
+			inline Vector3D GetNormal() const;
+
+			inline Vector3D AbsNormal();
+
 		};
 
 		inline Plane::Plane() : X(0.0f), Y(0.0f), Z(0.0f), Distance(0.0f) { }
@@ -59,14 +61,37 @@ namespace Vrixic
 			return p.X * v.X + p.Y * v.Y + p.Z * v.Z;
 		}
 
-		inline Vector3D Plane::GetNormal() const
+		inline PlaneIntersectionResult Plane::IntersectSphereOnPlane(const Vector3D& center, const float radius, const Plane& plane)
 		{
-			return Vector3D(X, Y, Z);
-		}
+			float SphereCenterOffset = Plane::Dot(plane, center);
+			float SphereSignedDistance = SphereCenterOffset - plane.Distance;
 
-		inline Vector3D Plane::AbsNormal()
+			if (SphereSignedDistance < -radius)
+			{
+				return PlaneIntersectionResult::Back;
+			}
+			else if (SphereSignedDistance > radius)
+			{
+				return PlaneIntersectionResult::Front;
+			}
+
+			return PlaneIntersectionResult::Intersection;
+		}
+		
+		//inline PlaneIntersectionResult VrixicMath::IntersectAABBOnPlane(const Vector3D& aabbMin, const Vector3D& aabbMax, Plane& plane)
+		//{
+		//	Vector3D SphereCenter = (aabbMin + aabbMax) * 0.5f;
+		//	Vector3D BoxExtents = aabbMax - SphereCenter;
+		//
+		//	float SphereProjectedRadius = Vector3D::DotProduct(plane.AbsNormal(), BoxExtents);
+		//
+		//	return IntersectSphereOnPlane(SphereCenter, SphereProjectedRadius, plane);
+		//}
+
+		inline PlaneIntersectionResult Plane::IntersectAABBOnPlane(const Vector3D& inCenter, const Vector3D& inExtents, Plane& inPlane)
 		{
-			return Vector3D(std::abs(X), std::abs(Y), std::abs(Z));
+			float SphereProjectedRadius = Vector3D::DotProduct(inPlane.AbsNormal(), inExtents);
+			return IntersectSphereOnPlane(inCenter, SphereProjectedRadius, inPlane);
 		}
 
 		inline void Plane::Normalize()
@@ -78,6 +103,16 @@ namespace Vrixic
 			Y *= R;
 			Z *= R;
 			Distance *= R;
+		}
+
+		inline Vector3D Plane::GetNormal() const
+		{
+			return Vector3D(X, Y, Z);
+		}
+
+		inline Vector3D Plane::AbsNormal()
+		{
+			return Vector3D(std::abs(X), std::abs(Y), std::abs(Z));
 		}
 	}
 }

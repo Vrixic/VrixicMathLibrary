@@ -2,11 +2,6 @@
 
 #include <cstdlib>
 
-class Vector3D;
-class Vector4D;
-class Matrix4D;
-//class Plane;
-
 #define PI (3.1415926535897932f)
 
 /* Smallest float point number  */
@@ -23,7 +18,7 @@ enum PlaneIntersectionResult
 	Front
 };
 
-/* These Functions can be implemented in different locations if not implemented in here */
+/* Math Helper functions */
 struct MathUtils
 {
 public:
@@ -65,7 +60,7 @@ public:
 
 	inline static float Lerp(float start, float end, float ratio)
 	{
-		return static_cast<float>(end - start) * ratio + start;
+		return (end - start) * ratio + start;
 	}
 
 	/* Converts Degrees to radians */
