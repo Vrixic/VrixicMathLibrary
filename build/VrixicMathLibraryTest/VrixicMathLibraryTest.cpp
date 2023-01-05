@@ -12,6 +12,7 @@ int main()
 
     Matrix4D m1 = Matrix4D::MakeRotX(v.X) * Matrix4D::MakeRotY(v.Y) * Matrix4D::MakeRotZ(v.Z);
 
+    ProjectionMatrix4D P0;
     ProjectionMatrix4D P1 = ProjectionMatrix4D::MakeProjectionDirectXLH(800.0f / 600.0f, 65.0f, 0.1f, 100.0f);
     ProjectionMatrix4D P2 = ProjectionMatrix4D::MakeProjectionDirectXRH(800.0f / 600.0f, 65.0f, 0.1f, 100.0f);
     ProjectionMatrix4D P3 = ProjectionMatrix4D::MakeProjectionVulkanLH(800.0f / 600.0f, 65.0f, 0.1f, 100.0f);
@@ -36,7 +37,8 @@ int main()
     Vector3D V1(1, 0, 0);
     Vector3D RotateV1WithQ1 = Q1.RotateVector(V1);
     Vector3D RotatedV1WithQ2 = Q2.RotateVector(RotateV1WithQ1);
-    Vector3D RotateV1WithQ3 = Q3.RotateVector(V1);
+    Vector3D RotateV1WithQ3_Slow = Q3.RotateVectorSlow(V1);
+    Vector3D RotateV1WithQ3_Fast = Q3.RotateVector(V1);
 
     return 0;
 }

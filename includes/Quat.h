@@ -60,16 +60,35 @@ namespace Vrixic
 
 			inline const Quat& Normalize();
 
-			/* Returns the conjugate of this quaternion */
+			/*
+			* Returns the conjugate of this quaternion
+			* 
+			* if |Quat| = 1 (meaning quaternion is normalized), the Inverse() = Conjugate()
+			*/
 			inline Quat Conjugate() const;
 
-			/* return Inverse of quaternion */
+			/* 
+			* return Inverse of quaternion 
+			* 
+			* if |Quat| = 1 (meaning quaternion is normalized), the Inverse() = Conjugate()
+			*/
 			inline Quat Inverse() const;
 
-			/* Passive Rotation -> Coordinate system is rotated with respect to the point
+			/* 
+			* Faster as Inverse() = Conjugate(), it is implied that Quat is normalized 
+			* 
+			* Passive Rotation -> Coordinate system is rotated with respect to the point
 			* Rotate a vector by this quaternion -> for a point q and quat q -> qpq^-1
 			*/
 			inline Vector3D RotateVector(const Vector3D& v) const;
+
+			/* 
+			* Slower as it calculates the Inverse() 
+			* 
+			* Passive Rotation -> Coordinate system is rotated with respect to the point
+			* Rotate a vector by this quaternion -> for a point q and quat q -> qpq^-1
+			*/
+			inline Vector3D RotateVectorSlow(const Vector3D& v) const;
 		};
 
 		inline Quat::Quat()
@@ -216,6 +235,16 @@ namespace Vrixic
 		}
 
 		inline Vector3D Quat::RotateVector(const Vector3D& v) const
+		{
+			Quat ToRotate = Quat(v, 0.0f);
+			Quat Inv = Conjugate();
+
+			Quat Result = *this * ToRotate * Inv;
+
+			return Vector3D(Result.X, Result.Y, Result.Z);
+		}
+
+		inline Vector3D Quat::RotateVectorSlow(const Vector3D& v) const
 		{
 			Quat ToRotate = Quat(v, 0.0f);
 			Quat Inv = Inverse();

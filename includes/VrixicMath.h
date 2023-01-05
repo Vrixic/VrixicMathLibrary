@@ -8,6 +8,8 @@
 #include "Plane.h"
 #include "Quat.h"
 
+#define VM Vrixic::Math
+
 namespace Vrixic
 {
 	namespace Math

@@ -8,10 +8,9 @@ namespace Vrixic
 		/* Represents a perspective projection matrix */
 		struct ProjectionMatrix4D : public Matrix4D
 		{
-		private:
+		public:
 			inline ProjectionMatrix4D() : Matrix4D() { };
 
-		public:
 			/* By default its is a Left Handed Matrix, for DirectX */
 			inline ProjectionMatrix4D(float aspectRatio, float verticalFOVInDegs, float nearZ, float farZ);
 
