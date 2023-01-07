@@ -55,23 +55,40 @@ public:
 
 	void CreateFrustum(const VM::Matrix4D& camModel)
 	{
-		VM::Vector3D CameraPosition = camModel[3].ToVector3D();
-		VM::Vector3D CameraRight = camModel[0].ToVector3D();
-		VM::Vector3D CameraUp = camModel[1].ToVector3D();
-		VM::Vector3D CameraForward = camModel[2].ToVector3D();
+		VM::Vector3D FarPlaneCenter;
+		VM::Vector3D NearPlaneCenter;
 
-		VM::Vector3D FarPlaneCenter = CameraPosition + CameraForward * FarPlaneDist;
-		VM::Vector3D NearPlaneCenter = CameraPosition + CameraForward * NearPlaneDist;
+		VM::Vector3D CameraUpFPH;
+		VM::Vector3D CameraUpNPH;
 
-		VM::Vector3D FTL = FarPlaneCenter + (CameraUp * FarPlaneHeight * 0.5f) - (CameraRight * FarPlaneWidth * 0.5f);
-		VM::Vector3D FTR = FarPlaneCenter + (CameraUp * FarPlaneHeight * 0.5f) + (CameraRight * FarPlaneWidth * 0.5f);
-		VM::Vector3D FBL = FarPlaneCenter - (CameraUp * FarPlaneHeight * 0.5f) - (CameraRight * FarPlaneWidth * 0.5f);
-		VM::Vector3D FBR = FarPlaneCenter - (CameraUp * FarPlaneHeight * 0.5f) + (CameraRight * FarPlaneWidth * 0.5f);
+		VM::Vector3D CameraRightFPW;
+		VM::Vector3D CameraRightNPW;
 
-		VM::Vector3D NTL = NearPlaneCenter + (CameraUp * NearPlaneHeight * 0.5f) - (CameraRight * NearPlaneWidth * 0.5f);
-		VM::Vector3D NTR = NearPlaneCenter + (CameraUp * NearPlaneHeight * 0.5f) + (CameraRight * NearPlaneWidth * 0.5f);
-		VM::Vector3D NBL = NearPlaneCenter - (CameraUp * NearPlaneHeight * 0.5f) - (CameraRight * NearPlaneWidth * 0.5f);
-		VM::Vector3D NBR = NearPlaneCenter - (CameraUp * NearPlaneHeight * 0.5f) + (CameraRight * NearPlaneWidth * 0.5f);
+		{
+			VM::Vector3D CameraPosition = camModel[3].ToVector3D();
+			VM::Vector3D CameraRight = camModel[0].ToVector3D() * 0.5f;
+			VM::Vector3D CameraUp = camModel[1].ToVector3D() * 0.5f;
+			VM::Vector3D CameraForward = camModel[2].ToVector3D();
+
+			FarPlaneCenter = CameraPosition + CameraForward * FarPlaneDist;
+			NearPlaneCenter = CameraPosition + CameraForward * NearPlaneDist;
+
+			CameraUpFPH = CameraUp * FarPlaneHeight;
+			CameraUpNPH = CameraUp * NearPlaneHeight;
+
+			CameraRightFPW = CameraRight * FarPlaneWidth;
+			CameraRightNPW = CameraRight * NearPlaneWidth;
+		}
+
+		VM::Vector3D FTL = FarPlaneCenter + CameraUpFPH - CameraRightFPW;
+		VM::Vector3D FTR = FarPlaneCenter + CameraUpFPH + CameraRightFPW;
+		VM::Vector3D FBL = FarPlaneCenter - CameraUpFPH - CameraRightFPW;
+		VM::Vector3D FBR = FarPlaneCenter - CameraUpFPH + CameraRightFPW;
+
+		VM::Vector3D NTL = NearPlaneCenter + CameraUpNPH - CameraRightNPW;
+		VM::Vector3D NTR = NearPlaneCenter + CameraUpNPH + CameraRightNPW;
+		VM::Vector3D NBL = NearPlaneCenter - CameraUpNPH - CameraRightNPW;
+		VM::Vector3D NBR = NearPlaneCenter - CameraUpNPH + CameraRightNPW;
 
 		/* Keeps the corners for debug visualizations */
 #if _DEBUG

@@ -145,6 +145,7 @@
     <ClInclude Include="..\..\includes\Plane.h" />
     <ClInclude Include="..\..\includes\ProjectionMatrix4D.h" />
     <ClInclude Include="..\..\includes\Quat.h" />
+    <ClInclude Include="..\..\includes\Ray.h" />
     <ClInclude Include="..\..\includes\TranslationMatrix4D.h" />
     <ClInclude Include="..\..\includes\Vector2D.h" />
     <ClInclude Include="..\..\includes\Vector3D.h" />

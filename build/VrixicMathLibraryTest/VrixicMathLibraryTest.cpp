@@ -33,6 +33,8 @@ int main()
     Quat Q2 = Quat::MakeRotationQuat(1, 0, 0, 45.0f); // Then rotate 45 degress on pitch (x)
     Quat Q3 = Q2 * Q1; // First rotation should go last as quaternion rotation order matters
 
+    Quat SlerpQ1Q2 = Quat::Slerp(Q1, Q2, 0.5f);
+
     /* rotate Vector by quaternion Q3 */
     Vector3D V1(1, 0, 0);
     Vector3D RotateV1WithQ1 = Q1.RotateVector(V1);

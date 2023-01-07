@@ -79,7 +79,7 @@ namespace Vrixic
 			inline static Matrix4D OrthoNormalizeMatrix(const Matrix4D& mat);
 
 			inline static Matrix4D TurnTo(float deltaTime, float speed, const Vector3D& target, const Matrix4D& mat);
-			
+
 			inline void SetIdentity();
 
 			inline void SetTranslation(const Vector3D& translation);
@@ -106,6 +106,16 @@ namespace Vrixic
 			inline Vector3D GetEulerAngles() const;
 
 			inline Vector3D GetLocalScale() const;
+
+			/**
+			* Creates a quaternion from a rotational Matrix4D, same as Quat::MakeFromMatrix4D(const Matrix4D& inMat)
+			* Algorithm from: "https://www.gamedeveloper.com/programming/rotating-objects-using-quaternions"
+			* 
+			* This avoids redefinition of Matrix4D in Quat
+			* 
+			* return float* a pointer to float[4] which should be converted over to a Quat
+			*/
+			inline float* ToQuat() const;
 		};
 
 		inline Matrix4D::Matrix4D()
@@ -507,6 +517,55 @@ namespace Vrixic
 		inline Vector3D Matrix4D::GetLocalScale() const
 		{
 			return Vector3D(M[0][0], M[1][1], M[2][2]);
+		}
+
+		inline float* Matrix4D::ToQuat() const
+		{
+			float Result[4];
+
+			float Trace = M[0][0] + M[1][1] + M[2][2];
+
+			// Check the diagonal
+			if (Trace > 0.0f)
+			{
+				float S = sqrtf(Trace + 1.0f);
+				float T = 0.5f / S;
+
+				Result[0] = (M[2][1] - M[1][2]) * T;
+				Result[1] = (M[0][2] - M[2][0]) * T;
+				Result[2] = (M[1][0] - M[0][1]) * T;
+				Result[3] = S * 0.5f;
+			}
+			else
+			{
+				// Diagonal is negative
+				int I = 0;
+				if (M[1][1] > M[0][0]) I = 1;
+				if (M[2][2] > M[I][I]) I = 2;
+
+				static const int NEXT[3] = { 1, 2, 0 };
+				int J = NEXT[I];
+				int K = NEXT[J];
+
+				float S = sqrt((M[I][J] - (M[J][J] + M[K][K]))
+					+ 1.0f);
+				Result[I] = S * 0.5f;
+				float T;
+				if (S != 0.0)
+				{
+					T = 0.5f / S;
+				}
+				else
+				{
+					T = S;
+				}
+
+				Result[3] = (M[K][J] - M[J][K]) * T;
+				Result[J] = (M[J][I] + M[I][J]) * T;
+				Result[K] = (M[K][I] + M[I][K]) * T;
+			}
+
+			return Result;
 		}
 	}
 }

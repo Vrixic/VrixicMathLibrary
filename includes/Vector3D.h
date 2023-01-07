@@ -66,6 +66,11 @@ namespace Vrixic
 
 			inline float LengthSquared() const;
 
+			/**
+			* Normalize this vector 
+			* 
+			* @return const Vector3D& normalized vector
+			*/
 			inline const Vector3D& Normalize();
 		};
 
